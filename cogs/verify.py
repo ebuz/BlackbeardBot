@@ -106,22 +106,25 @@ async def _apply_discord_updates(
     interaction: discord.Interaction,
     wa_full: str,
     membership_level: Optional[str],
-) -> None:
+    registry: "VerifiedRegistry",
+    wa_contact_id: int,
+) -> List[discord.Role]:
     """
     Applies Discord updates for successfully verified ACTIVE members:
       - nickname set to WA name
       - roles set based on membership level
       - removes "past member" if present
+      - restores old roles if previously demoted
     """
     guild = interaction.guild
     if guild is None:
-        return
+        return []
 
     member = interaction.user
     if not isinstance(member, discord.Member):
         member = guild.get_member(interaction.user.id)
         if member is None:
-            return
+            return []
 
     # --- nickname (Discord limit is 32 chars) ---
     new_nick = (wa_full or "").strip()[:32] or None
@@ -155,6 +158,19 @@ async def _apply_discord_updates(
         if role_social and role_social in member.roles:
             remove_roles.append(role_social)
 
+    # --- restore old roles ---
+    wa_records = await registry.list_wa_records(guild.id)
+    rec = wa_records.get(str(wa_contact_id))
+    if rec and rec.get("restorable_role_ids"):
+        # We don't filter by bot management here, because if we can't manage it, it'll just be ignored in the try/except
+        for rid in rec.get("restorable_role_ids", []):
+            role = guild.get_role(rid)
+            if role and role not in add_roles:
+                add_roles.append(role)
+        
+        # Clear the old saved roles so we don't re-apply them needlessly later
+        await registry.update_wa_record(guild.id, wa_contact_id, {"restorable_role_ids": []})
+
     try:
         if remove_roles:
             await member.remove_roles(*remove_roles, reason="Verified via WildApricot")
@@ -163,17 +179,20 @@ async def _apply_discord_updates(
     except (discord.Forbidden, discord.HTTPException):
         pass
 
+    return add_roles
+
 
 async def _demote_to_past_member_and_social(
     bot: commands.Bot,
     member: discord.Member,
     role_past_member: Optional[discord.Role],
     role_social: Optional[discord.Role],
-) -> None:
+) -> List[discord.Role]:
     """
     Remove all removable roles, then ensure member has:
       - past member
       - social
+    Returns a list of roles that were removed.
     """
     guild = member.guild
     bot_m = _bot_member(guild, bot)
@@ -212,6 +231,8 @@ async def _demote_to_past_member_and_social(
             await member.add_roles(*to_add, reason="Season re-verification enforcement")
     except (discord.Forbidden, discord.HTTPException):
         pass
+
+    return to_remove
 
 
 # -------------------- verified registry (WA ID <-> Discord user) --------------------
@@ -640,10 +661,26 @@ class VerifyModal(discord.ui.Modal, title="Member Verification"):
             return
 
         # Success: nickname + roles
-        await _apply_discord_updates(interaction, wa_full=wa_full, membership_level=membership_level)
+        added_roles = await _apply_discord_updates(
+            interaction, 
+            wa_full=wa_full, 
+            membership_level=membership_level,
+            registry=self.registry,
+            wa_contact_id=contact_id
+        )
+
+        added_roles_text = ", ".join(f"`{r.name}`" for r in added_roles) if added_roles else "None"
+        
+        channel_name = getattr(config, "GET_ROLES_CHANNEL_NAME", "get-roles")
+        roles_ch = discord.utils.get(guild.channels, name=channel_name)
+        ch_mention = f"<#{roles_ch.id}>" if roles_ch else f"#{channel_name}"
 
         await interaction.followup.send(
-            f"Verified.\nMembership status: `{status or 'Unknown'}`\nMembership level: `{membership_level or 'Unknown'}`",
+            f"Verified.\n"
+            f"Membership status: `{status or 'Unknown'}`\n"
+            f"Membership level: `{membership_level or 'Unknown'}`\n"
+            f"**Roles Assigned:** {added_roles_text}\n\n"
+            f"To manage your roles, head over to the {ch_mention} channel.",
             ephemeral=True,
         )
 
@@ -835,7 +872,7 @@ class VerifyCog(commands.Cog):
                 continue
 
             # Not re-verified this season: demote
-            await _demote_to_past_member_and_social(
+            removed_roles = await _demote_to_past_member_and_social(
                 bot=self.bot,
                 member=member,
                 role_past_member=role_past_member,
@@ -850,6 +887,7 @@ class VerifyCog(commands.Cog):
                 updates={
                     "demoted_for_season_year": season_year,
                     "demoted_at_utc": _utcnow().isoformat(timespec="seconds").replace("+00:00", "Z"),
+                    "restorable_role_ids": [r.id for r in removed_roles] if removed_roles else [],
                 },
             )
 
