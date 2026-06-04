@@ -83,10 +83,9 @@ install: .venv
 	@echo "     sudo systemctl enable --now blackbeard-bot"
 	@echo "     sudo systemctl enable --now blackbeard-backup.timer"
 
-# === BUILD-INSTALL (one-liner for updates) ===
+# === BUILD-INSTALL (one-liner for updates, assumes git pull already done) ===
 
 build-install:
-	git pull
 	$(MAKE) install
 
 # === UNINSTALL (preserves credentials + data) ===
