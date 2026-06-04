@@ -1,0 +1,19 @@
+[Unit]
+Description=BlackbeardBot Discord Server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=blackbeard
+Group=blackbeard
+WorkingDirectory=/opt/blackbeard-bot
+EnvironmentFile=-/etc/default/blackbeard-bot
+ExecStart=/opt/blackbeard-bot/.venv/bin/python main.py
+StandardOutput=journal
+StandardError=journal
+Restart=always
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target

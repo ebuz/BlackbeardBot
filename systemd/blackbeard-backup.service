@@ -1,0 +1,17 @@
+[Unit]
+Description=BlackbeardBot: Backup verified members to Google Drive
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=blackbeard
+Group=blackbeard
+WorkingDirectory=/opt/blackbeard-bot
+EnvironmentFile=-/etc/default/blackbeard-bot
+ExecStart=/opt/blackbeard-bot/.venv/bin/python scripts/upload_backup.py
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

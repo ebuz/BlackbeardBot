@@ -1,0 +1,9 @@
+[Unit]
+Description=BlackbeardBot: Backup verified members to Google Drive (daily)
+
+[Timer]
+OnCalendar=*-*-* 04:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

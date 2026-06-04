@@ -3,3 +3,5 @@ aiohttp>=3.8.0,<4.0.0
 python-dotenv>=1.0.0,<2.0.0
 google-auth>=2.20.0,<3.0.0
 gspread>=5.10.0,<7.0.0
+google-api-python-client>=2.80.0,<3.0.0
+google-auth-oauthlib>=1.0.0,<2.0.0

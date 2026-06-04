@@ -7,16 +7,16 @@ TOKEN = os.getenv("DISCORD_TOKEN", "")
 WA_API_KEY = os.getenv("WA_API_KEY", "")
 WA_ACCOUNT_ID = int(os.getenv("WA_ACCOUNT_ID", "0"))
 
-VERIFY_CHANNEL_NAME = "get-verified"  # Discord server channel used to get verified
-VERIFY_MESSAGE_STATE_FILE = "data/verify_message.json"
+VERIFY_CHANNEL_NAME = os.getenv("VERIFY_CHANNEL_NAME", "get-verified")
+VERIFY_MESSAGE_STATE_FILE = os.getenv("VERIFY_MESSAGE_STATE_FILE", "data/verify_message.json")
 
-WA_API_VERSION = "v2.1"
+WA_API_VERSION = os.getenv("WA_API_VERSION", "v2.1")
 
-ROLE_SOCIAL = "social"
-ROLE_SWABBIE = "Swabbie"
+ROLE_SOCIAL = os.getenv("ROLE_SOCIAL", "social")
+ROLE_SWABBIE = os.getenv("ROLE_SWABBIE", "Swabbie")
 
-GET_ROLES_CHANNEL_NAME = "get-roles"
-ROLE_PANEL_STATE_FILE = "data/role_panels.json"
+GET_ROLES_CHANNEL_NAME = os.getenv("GET_ROLES_CHANNEL_NAME", "get-roles")
+ROLE_PANEL_STATE_FILE = os.getenv("ROLE_PANEL_STATE_FILE", "data/role_panels.json")
 
 # Google Sheets and Workhours Config
 GOOGLE_SERVICE_ACCOUNT_JSON = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "data/google_credentials.json")

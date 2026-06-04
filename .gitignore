@@ -1,12 +1,23 @@
+# Secrets and environment
 .env
-*.env
+config/*.json
+token_*.json
 
+# Python
 __pycache__/
 *__pycache__/
 *.pyc
+.venv/
+venv/
 
+# Build artifacts
+build/
+bin/
+
+# Runtime data (persists in /var/lib/)
+data/
+
+# Docker (if added later)
 docker-compose.yml
 Dockerfile
 .dockerignore
-
-verified_members.json
