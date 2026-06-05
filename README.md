@@ -152,16 +152,6 @@ The default Google Drive folder ID is set in `config/default.env` and can be ove
 - `make uninstall` preserves credentials, data, and env overrides.
 - `make purge` removes everything including credentials and data.
 
-### Integration with keycard-service
-
-BlackbeardBot can be used as an alerting channel for the keycard-service.
-The keycard alert script supports `DISCORD_BOT_TOKEN` + `DISCORD_ALERT_CHANNEL_ID`,
-which would let the keycard user post failure alerts to a Discord channel via the
-same bot infrastructure. A dedicated webhook is a simpler alternative.
-
-See the [keycard-service](https://github.com/ubcsailingclub/keycard-service) repo
-for details.
-
 ### License
 
 MIT
