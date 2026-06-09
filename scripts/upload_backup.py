@@ -4,8 +4,8 @@ BlackbeardBot: Backup verified_members.json to Google Drive.
 
 Replaces the legacy cron-based backup. Reads config from env:
     GOOGLE_DRIVE_FOLDER_ID   — Google Drive folder ID for backups
-    GOOGLE_CLIENT_SECRET     — path to OAuth client secret JSON
-    GOOGLE_TOKEN_FILE         — path to persisted OAuth token (default: token_gdrive.json)
+    GOOGLE_CLIENT_SECRET     — path to OAuth client secret JSON (default: /etc/blackbeard-bot/credentials/gdrive_client_secret.json)
+    GOOGLE_TOKEN_FILE         — path to persisted OAuth token (default: /etc/blackbeard-bot/credentials/token_gdrive.json)
     VERIFIED_MEMBERS_FILE     — path to verified_members.json source (default: data/verified_members.json)
 
 On first run, opens an OAuth flow. Subsequent runs use the cached token.
@@ -31,11 +31,12 @@ FOLDER_ID = os.environ.get("GOOGLE_DRIVE_FOLDER_ID", "12ZScVdqRwwvzrQsABoc5D2Cs7
 # Resolve paths relative to the repo root (WorkingDirectory in systemd unit)
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = Path(os.environ.get("DATA_DIR", str(REPO_ROOT / "data")))
+CREDENTIALS_DIR = Path("/etc/blackbeard-bot/credentials")
 CLIENT_SECRET = os.environ.get(
     "GOOGLE_CLIENT_SECRET",
-    str(DATA_DIR / "gdrive_client_secret.json")
+    str(CREDENTIALS_DIR / "gdrive_client_secret.json")
 )
-TOKEN_FILE = os.environ.get("GOOGLE_TOKEN_FILE", str(DATA_DIR / "token_gdrive.json"))
+TOKEN_FILE = os.environ.get("GOOGLE_TOKEN_FILE", str(CREDENTIALS_DIR / "token_gdrive.json"))
 SOURCE_FILE = os.environ.get("VERIFIED_MEMBERS_FILE", str(DATA_DIR / "verified_members.json"))
 
 
